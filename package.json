@@ -1,4 +1,4 @@
-{
+﻿{
   "name": "luis-fernando-shop",
   "version": "0.1.0",
   "private": true,
@@ -10,8 +10,8 @@
     "test": "vitest",
     "test:ui": "vitest --ui",
     "test:run": "vitest run",
-    "test:e2e": "playwright test",
-    "test:e2e:ui": "playwright test --ui"
+    "test:e2e": "npx playwright test",
+    "test:e2e:ui": "npx playwright test --ui"
   },
   "dependencies": {
     "@stripe/stripe-js": "^9.7.0",
