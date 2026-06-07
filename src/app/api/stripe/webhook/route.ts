@@ -2,73 +2,86 @@ import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
 import { createClient } from '@/lib/supabase/server'
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!)
-
 export async function POST(request: NextRequest) {
-  const body = await request.text()
-  const signature = request.headers.get('stripe-signature')!
-
-  let event: Stripe.Event
+  const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!)
 
   try {
-    event = stripe.webhooks.constructEvent(
-      body,
-      signature,
-      process.env.STRIPE_WEBHOOK_SECRET!
-    )
-  } catch (error) {
-    console.error('Webhook signature error:', error)
-    return NextResponse.json({ error: 'Invalid signature' }, { status: 400 })
-  }
-
-  if (event.type === 'checkout.session.completed') {
-    const session = event.data.object as Stripe.Checkout.Session
-    const supabase = await createClient()
-
-    try {
-      const items = JSON.parse(session.metadata?.items || '[]')
-      const shipping = session.shipping_cost?.amount_total || 0
-      const address = session.customer_details?.address
-
-      const { data: order, error: orderError } = await supabase
-        .from('orders')
-        .insert({
-          status: 'paid',
-          stripe_payment_id: session.payment_intent as string,
-          total_cents: session.amount_total!,
-          shipping_cost_cents: shipping,
-          shipping_address: {
-            name: session.customer_details?.name,
-            line1: address?.line1,
-            city: address?.city,
-            country: address?.country,
-            postal_code: address?.postal_code,
-          },
-        })
-        .select()
-        .single()
-
-      if (orderError || !order) throw orderError
-
-      for (const item of items) {
-        await supabase.from('order_items').insert({
-          order_id: order.id,
-          product_id: item.id,
-          quantity: item.quantity,
-          unit_price_cents: item.price_cents,
-        })
-        await supabase.rpc('decrement_stock', {
-          product_id: item.id,
-          amount: item.quantity,
-        })
-      }
-
-      console.log('Pedido creado:', order.id)
-    } catch (error) {
-      console.error('Error procesando pedido:', error)
-      return NextResponse.json({ error: 'Error procesando pedido' }, { status: 500 })
+    const { items } = await request.json()
+    if (!items || items.length === 0) {
+      return NextResponse.json({ error: 'No hay productos' }, { status: 400 })
     }
-  }
 
-  return NextResponse.json({ received: true })
+    const supabase = await createClient()
+    const ids = items.map((i: { id: string }) => i.id)
+    const { data: products, error } = await supabase
+      .from('products')
+      .select('id, name, price_cents, stock, images')
+      .in('id', ids)
+
+    if (error || !products) {
+      return NextResponse.json({ error: 'Error obteniendo productos' }, { status: 500 })
+    }
+
+    const line_items = items.map((item: { id: string; quantity: number }) => {
+      const product = products.find(p => p.id === item.id)
+      if (!product) throw new Error(`Producto ${item.id} no encontrado`)
+      return {
+        price_data: {
+          currency: 'eur',
+          product_data: {
+            name: product.name,
+            images: product.images?.length > 0 ? [product.images[0]] : [],
+          },
+          unit_amount: product.price_cents,
+        },
+        quantity: item.quantity,
+      }
+    })
+
+    const session = await stripe.checkout.sessions.create({
+      payment_method_types: ['card'],
+      line_items,
+      mode: 'payment',
+      success_url: `${process.env.NEXT_PUBLIC_APP_URL}/pedido-confirmado?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/carrito`,
+      shipping_address_collection: {
+        allowed_countries: [
+          'ES', 'FR', 'DE', 'IT', 'PT', 'GB', 'NL', 'BE',
+          'US', 'MX', 'AR', 'CO', 'CL', 'PE',
+        ],
+      },
+      shipping_options: [
+        {
+          shipping_rate_data: {
+            type: 'fixed_amount',
+            fixed_amount: { amount: 595, currency: 'eur' },
+            display_name: 'Envío estándar España',
+            delivery_estimate: {
+              minimum: { unit: 'business_day', value: 3 },
+              maximum: { unit: 'business_day', value: 5 },
+            },
+          },
+        },
+        {
+          shipping_rate_data: {
+            type: 'fixed_amount',
+            fixed_amount: { amount: 1490, currency: 'eur' },
+            display_name: 'Envío internacional',
+            delivery_estimate: {
+              minimum: { unit: 'business_day', value: 5 },
+              maximum: { unit: 'business_day', value: 10 },
+            },
+          },
+        },
+      ],
+      metadata: {
+        items: JSON.stringify(items),
+      },
+    })
+
+    return NextResponse.json({ url: session.url })
+  } catch (error) {
+    console.error('Checkout error:', error)
+    return NextResponse.json({ error: 'Error creando el pago' }, { status: 500 })
+  }
 }
