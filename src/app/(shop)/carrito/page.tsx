@@ -33,7 +33,6 @@ export default function CarritoPage() {
 
       const data = await response.json()
       if (data.url) {
-        clearCart()
         window.location.href = data.url
       }
     } catch (error) {
