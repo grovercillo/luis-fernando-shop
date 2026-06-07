@@ -2,12 +2,19 @@
 
 import { useCartStore } from '@/lib/cart-store'
 import { useRouter } from 'next/navigation'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 
 export default function CarritoPage() {
   const { items, removeItem, updateQuantity, total, clearCart } = useCartStore()
   const router = useRouter()
   const [loading, setLoading] = useState(false)
+  const [hydrated, setHydrated] = useState(false)
+
+  useEffect(() => {
+    setHydrated(true)
+  }, [])
+
+  if (!hydrated) return null
 
   const handleCheckout = async () => {
     setLoading(true)
@@ -38,7 +45,7 @@ export default function CarritoPage() {
 
   if (items.length === 0) {
     return (
-      <main style={{ minHeight: '100vh', background: 'var(--pergamino)' }}>
+      <main style={{ minHeight: '100vh', background: '#FAF6EE' }}>
         <div style={{
           maxWidth: '600px',
           margin: '0 auto',
@@ -46,28 +53,27 @@ export default function CarritoPage() {
           textAlign: 'center',
         }}>
           <h1 style={{
-            fontFamily: 'DM Serif Display, serif',
+            fontFamily: 'Georgia, serif',
             fontSize: '28px',
-            color: 'var(--tierra)',
+            color: '#5C3317',
             marginBottom: '12px',
           }}>
             Tu carrito está vacío
           </h1>
-          <p style={{ color: 'var(--piedra)', marginBottom: '2rem' }}>
+          <p style={{ color: '#8A7D6B', marginBottom: '2rem' }}>
             Añade algún producto para continuar
           </p>
           <button
             onClick={() => router.push('/')}
             style={{
-              background: 'var(--tierra)',
-              color: 'var(--crema)',
+              background: '#5C3317',
+              color: '#F5ECD8',
               border: 'none',
               borderRadius: '4px',
               padding: '10px 24px',
               fontSize: '13px',
               fontWeight: 500,
               cursor: 'pointer',
-              fontFamily: 'DM Sans, sans-serif',
             }}
           >
             Ver productos
@@ -80,31 +86,29 @@ export default function CarritoPage() {
   const totalEur = (total() / 100).toFixed(2).replace('.', ',')
 
   return (
-    <main style={{ minHeight: '100vh', background: 'var(--pergamino)' }}>
+    <main style={{ minHeight: '100vh', background: '#FAF6EE' }}>
       <div style={{ maxWidth: '700px', margin: '0 auto', padding: '3rem 2rem' }}>
 
-        {/* Header */}
         <div style={{ marginBottom: '2rem' }}>
           <p style={{
             fontSize: '10px',
             fontWeight: 500,
             letterSpacing: '0.15em',
             textTransform: 'uppercase',
-            color: 'var(--piedra)',
+            color: '#8A7D6B',
             marginBottom: '6px',
           }}>
             Tu selección
           </p>
           <h1 style={{
-            fontFamily: 'DM Serif Display, serif',
+            fontFamily: 'Georgia, serif',
             fontSize: '32px',
-            color: 'var(--tierra)',
+            color: '#5C3317',
           }}>
             Carrito
           </h1>
         </div>
 
-        {/* Items */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '2rem' }}>
           {items.map(item => {
             const itemPrice = (item.price_cents / 100).toFixed(2).replace('.', ',')
@@ -112,7 +116,7 @@ export default function CarritoPage() {
 
             return (
               <div key={item.id} style={{
-                background: 'var(--blanco)',
+                background: '#FDFAF5',
                 border: '0.5px solid rgba(92,51,23,0.15)',
                 borderRadius: '10px',
                 padding: '1.25rem',
@@ -121,49 +125,46 @@ export default function CarritoPage() {
                 gap: '1rem',
               }}>
 
-                {/* Placeholder imagen */}
                 <div style={{
                   width: '64px',
                   height: '64px',
-                  background: 'var(--crema)',
+                  background: '#F5ECD8',
                   borderRadius: '6px',
                   flexShrink: 0,
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
                   fontSize: '10px',
-                  color: 'var(--piedra)',
+                  color: '#8A7D6B',
                   textAlign: 'center',
                   fontStyle: 'italic',
                 }}>
                   {item.brand.split(' ')[0]}
                 </div>
 
-                {/* Info */}
                 <div style={{ flex: 1 }}>
                   <p style={{
                     fontSize: '10px',
                     fontWeight: 500,
                     letterSpacing: '0.1em',
                     textTransform: 'uppercase',
-                    color: 'var(--piedra)',
+                    color: '#8A7D6B',
                     marginBottom: '2px',
                   }}>
                     {item.brand}
                   </p>
                   <p style={{
-                    fontFamily: 'DM Serif Display, serif',
+                    fontFamily: 'Georgia, serif',
                     fontSize: '16px',
-                    color: 'var(--tierra)',
+                    color: '#5C3317',
                   }}>
                     {item.name}
                   </p>
-                  <p style={{ fontSize: '12px', color: 'var(--piedra)', marginTop: '2px' }}>
+                  <p style={{ fontSize: '12px', color: '#8A7D6B', marginTop: '2px' }}>
                     {itemPrice} € × {item.quantity} = {itemTotal} €
                   </p>
                 </div>
 
-                {/* Cantidad */}
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <button
                     onClick={() => updateQuantity(item.id, item.quantity - 1)}
@@ -172,7 +173,7 @@ export default function CarritoPage() {
                       border: '0.5px solid rgba(92,51,23,0.3)',
                       borderRadius: '4px',
                       background: 'transparent',
-                      color: 'var(--tierra)',
+                      color: '#5C3317',
                       fontSize: '16px',
                       cursor: 'pointer',
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -180,7 +181,7 @@ export default function CarritoPage() {
                   >
                     −
                   </button>
-                  <span style={{ fontSize: '14px', fontWeight: 500, color: 'var(--negro)', minWidth: '20px', textAlign: 'center' }}>
+                  <span style={{ fontSize: '14px', fontWeight: 500, color: '#1A1209', minWidth: '20px', textAlign: 'center' }}>
                     {item.quantity}
                   </span>
                   <button
@@ -190,7 +191,7 @@ export default function CarritoPage() {
                       border: '0.5px solid rgba(92,51,23,0.3)',
                       borderRadius: '4px',
                       background: 'transparent',
-                      color: 'var(--tierra)',
+                      color: '#5C3317',
                       fontSize: '16px',
                       cursor: 'pointer',
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -200,13 +201,12 @@ export default function CarritoPage() {
                   </button>
                 </div>
 
-                {/* Eliminar */}
                 <button
                   onClick={() => removeItem(item.id)}
                   style={{
                     background: 'transparent',
                     border: 'none',
-                    color: 'var(--piedra)',
+                    color: '#8A7D6B',
                     cursor: 'pointer',
                     fontSize: '18px',
                     padding: '4px',
@@ -220,9 +220,8 @@ export default function CarritoPage() {
           })}
         </div>
 
-        {/* Total y checkout */}
         <div style={{
-          background: 'var(--blanco)',
+          background: '#FDFAF5',
           border: '0.5px solid rgba(92,51,23,0.15)',
           borderRadius: '10px',
           padding: '1.5rem',
@@ -235,19 +234,17 @@ export default function CarritoPage() {
             paddingBottom: '1rem',
             borderBottom: '0.5px solid rgba(92,51,23,0.1)',
           }}>
-            <span style={{ fontSize: '13px', color: 'var(--piedra)' }}>
-              Subtotal
-            </span>
+            <span style={{ fontSize: '13px', color: '#8A7D6B' }}>Subtotal</span>
             <span style={{
-              fontFamily: 'DM Serif Display, serif',
+              fontFamily: 'Georgia, serif',
               fontSize: '24px',
-              color: 'var(--tierra)',
+              color: '#5C3317',
             }}>
               {totalEur} €
             </span>
           </div>
 
-          <p style={{ fontSize: '11px', color: 'var(--piedra)', marginBottom: '1rem' }}>
+          <p style={{ fontSize: '11px', color: '#8A7D6B', marginBottom: '1rem' }}>
             Los gastos de envío se calculan en el siguiente paso
           </p>
 
@@ -256,8 +253,8 @@ export default function CarritoPage() {
             disabled={loading}
             style={{
               width: '100%',
-              background: loading ? 'var(--piedra)' : 'var(--tierra)',
-              color: 'var(--crema)',
+              background: loading ? '#8A7D6B' : '#5C3317',
+              color: '#F5ECD8',
               border: 'none',
               borderRadius: '4px',
               padding: '14px',
@@ -265,7 +262,6 @@ export default function CarritoPage() {
               fontWeight: 500,
               letterSpacing: '0.06em',
               cursor: loading ? 'not-allowed' : 'pointer',
-              fontFamily: 'DM Sans, sans-serif',
             }}
           >
             {loading ? 'Redirigiendo a Stripe…' : 'Proceder al pago →'}
@@ -277,7 +273,7 @@ export default function CarritoPage() {
               width: '100%',
               background: 'transparent',
               border: 'none',
-              color: 'var(--membrillo)',
+              color: '#C4722A',
               fontSize: '12px',
               cursor: 'pointer',
               padding: '10px',
