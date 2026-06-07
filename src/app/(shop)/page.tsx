@@ -1,9 +1,8 @@
 import { createClient } from '@/lib/supabase/server'
-import ProductCard from '@/components/shop/ProductCard'
+import ProductGrid from '@/components/shop/ProductGrid'
 
 export default async function HomePage() {
   const supabase = await createClient()
-
   const { data: products, error } = await supabase
     .from('products')
     .select('*')
@@ -13,53 +12,48 @@ export default async function HomePage() {
   if (error) console.error(error)
 
   return (
-    <main style={{ minHeight: '100vh', background: 'var(--pergamino)' }}>
+    <main style={{ minHeight: '100vh', background: '#FAF6EE' }}>
 
       {/* Hero */}
       <section style={{
-        background: 'var(--tierra)',
+        background: '#5C3317',
         padding: '4rem 2rem',
         textAlign: 'center',
-        position: 'relative',
       }}>
         <p style={{
           fontSize: '10px',
           fontWeight: 500,
           letterSpacing: '0.2em',
           textTransform: 'uppercase',
-          color: 'var(--miel)',
+          color: '#E8A84C',
           marginBottom: '12px',
         }}>
           Puente Genil · Córdoba · España
         </p>
-
         <h1 style={{
-          fontFamily: 'DM Serif Display, serif',
+          fontFamily: 'Georgia, serif',
           fontSize: 'clamp(2rem, 5vw, 3.5rem)',
-          color: 'var(--crema)',
+          color: '#F5ECD8',
           lineHeight: 1.1,
           marginBottom: '12px',
         }}>
           Luis Fernando
         </h1>
-
         <p style={{
-          fontFamily: 'Playfair Display, serif',
+          fontFamily: 'Georgia, serif',
           fontStyle: 'italic',
           fontSize: 'clamp(1rem, 2vw, 1.3rem)',
-          color: 'var(--miel)',
+          color: '#E8A84C',
           marginBottom: '1.5rem',
         }}>
           Sabores de Puente Genil
         </p>
-
         <div style={{
           width: '40px',
           height: '1px',
-          background: 'var(--membrillo)',
+          background: '#C4722A',
           margin: '0 auto 1.5rem',
         }} />
-
         <p style={{
           fontSize: '14px',
           color: 'rgba(245,236,216,0.75)',
@@ -74,41 +68,30 @@ export default async function HomePage() {
 
       {/* Catálogo */}
       <section style={{ maxWidth: '1100px', margin: '0 auto', padding: '3rem 2rem' }}>
-
         <div style={{ marginBottom: '2rem' }}>
           <p style={{
             fontSize: '10px',
             fontWeight: 500,
             letterSpacing: '0.15em',
             textTransform: 'uppercase',
-            color: 'var(--piedra)',
+            color: '#8A7D6B',
             marginBottom: '6px',
           }}>
             Selección
           </p>
           <h2 style={{
-            fontFamily: 'DM Serif Display, serif',
+            fontFamily: 'Georgia, serif',
             fontSize: '28px',
-            color: 'var(--tierra)',
+            color: '#5C3317',
           }}>
             Nuestros productos
           </h2>
         </div>
-
         {products && products.length > 0 ? (
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
-            gap: '1.5rem',
-          }}>
-            {products.map(product => (
-              <ProductCard key={product.id} product={product} />
-            ))}
-          </div>
+          <ProductGrid products={products} />
         ) : (
-          <p style={{ color: 'var(--piedra)' }}>Cargando productos…</p>
+          <p style={{ color: '#8A7D6B' }}>No hay productos disponibles.</p>
         )}
-
       </section>
 
       {/* Footer */}
@@ -118,16 +101,16 @@ export default async function HomePage() {
         textAlign: 'center',
       }}>
         <p style={{
-          fontFamily: 'DM Serif Display, serif',
+          fontFamily: 'Georgia, serif',
           fontSize: '16px',
-          color: 'var(--tierra)',
+          color: '#5C3317',
           marginBottom: '4px',
         }}>
           Luis Fernando
         </p>
         <p style={{
           fontSize: '11px',
-          color: 'var(--piedra)',
+          color: '#8A7D6B',
           letterSpacing: '0.1em',
           textTransform: 'uppercase',
         }}>
