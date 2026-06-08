@@ -16,9 +16,10 @@ type Product = {
 
 export default function ProductCard({ product }: { product: Product }) {
   const addItem = useCartStore(state => state.addItem)
+  const updateQuantity = useCartStore(state => state.updateQuantity)
   const items = useCartStore(state => state.items)
   const cartItem = items.find(i => i.id === product.id)
-
+  
   const price = (product.price_cents / 100).toFixed(2).replace('.', ',')
   const inStock = product.stock > 0
 
@@ -34,7 +35,10 @@ export default function ProductCard({ product }: { product: Product }) {
   }
 
   return (
-    <article style={{
+    <article
+      onClick={() => window.location.href = `/productos/${product.slug}`}
+      style={{
+        cursor: 'pointer',
       background: '#FDFAF5',
       border: '0.5px solid rgba(92,51,23,0.15)',
       borderRadius: '10px',
@@ -43,23 +47,36 @@ export default function ProductCard({ product }: { product: Product }) {
       flexDirection: 'column',
     }}>
 
-      {/* Imagen placeholder */}
+      {/* Imagen */}
       <div style={{
         background: '#F5ECD8',
         height: '200px',
+        overflow: 'hidden',
+        borderBottom: '0.5px solid rgba(92,51,23,0.1)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        borderBottom: '0.5px solid rgba(92,51,23,0.1)',
       }}>
-        <span style={{
-          fontFamily: 'Georgia, serif',
-          fontSize: '14px',
-          color: '#8A7D6B',
-          fontStyle: 'italic',
-        }}>
-          {product.brand}
-        </span>
+        {product.images?.[0] ? (
+          <img
+            src={product.images[0]}
+            alt={product.name}
+            style={{
+              width: '100%',
+              height: '100%',
+              objectFit: 'cover',
+            }}
+          />
+        ) : (
+          <span style={{
+            fontFamily: 'Georgia, serif',
+            fontSize: '14px',
+            color: '#8A7D6B',
+            fontStyle: 'italic',
+          }}>
+            {product.brand}
+          </span>
+        )}
       </div>
 
       {/* Contenido */}
@@ -95,6 +112,7 @@ export default function ProductCard({ product }: { product: Product }) {
           color: '#8A7D6B',
           lineHeight: 1.6,
           flex: 1,
+          cursor: 'help',
         }}>
           {product.description?.slice(0, 100)}...
         </p>
@@ -134,16 +152,40 @@ export default function ProductCard({ product }: { product: Product }) {
           </span>
 
           {cartItem ? (
-            <span style={{
-              fontSize: '12px',
-              color: '#C4722A',
-              fontWeight: 500,
-            }}>
-              ✓ En carrito ({cartItem.quantity})
-            </span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <button
+                onClick={(e) => { e.stopPropagation(); updateQuantity(cartItem.id, cartItem.quantity - 1) }}
+                style={{
+                  width: '26px', height: '26px',
+                  border: '0.5px solid rgba(92,51,23,0.3)',
+                  borderRadius: '4px',
+                  background: 'transparent',
+                  color: '#5C3317',
+                  fontSize: '16px',
+                  cursor: 'pointer',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                }}
+              >−</button>
+              <span style={{ fontSize: '13px', fontWeight: 500, color: '#5C3317', minWidth: '16px', textAlign: 'center' }}>
+                {cartItem.quantity}
+              </span>
+              <button
+                onClick={(e) => { e.stopPropagation(); updateQuantity(cartItem.id, cartItem.quantity + 1) }}
+                style={{
+                  width: '26px', height: '26px',
+                  border: '0.5px solid rgba(92,51,23,0.3)',
+                  borderRadius: '4px',
+                  background: 'transparent',
+                  color: '#5C3317',
+                  fontSize: '16px',
+                  cursor: 'pointer',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                }}
+              >+</button>
+            </div>
           ) : (
             <button
-              onClick={handleAdd}
+              onClick={(e) => { e.stopPropagation(); handleAdd() }}
               disabled={!inStock}
               style={{
                 background: inStock ? '#5C3317' : '#8A7D6B',
