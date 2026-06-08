@@ -65,17 +65,16 @@ export async function POST(request: NextRequest) {
         })
       }
 
-      // Enviar email de confirmación
       if (email) {
         const orderNumber = order.id.slice(0, 8).toUpperCase()
-        await sendOrderConfirmation({
+        const result = await sendOrderConfirmation({
           to: email,
           orderNumber,
           items,
           total: session.amount_total!,
           shipping,
         })
-        console.log('Email enviado a:', email)
+        console.log('Resend result:', JSON.stringify(result))
       }
 
       console.log('Pedido creado:', order.id)

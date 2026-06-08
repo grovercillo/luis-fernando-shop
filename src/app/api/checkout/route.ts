@@ -15,12 +15,24 @@ export async function POST(request: NextRequest) {
     const ids = items.map((i: { id: string }) => i.id)
     const { data: products, error } = await supabase
       .from('products')
-      .select('id, name, price_cents, stock, images')
+      .select('id, name, brand, price_cents, stock, images')
       .in('id', ids)
 
     if (error || !products) {
       return NextResponse.json({ error: 'Error obteniendo productos' }, { status: 500 })
     }
+
+    // Enriquecer items con nombre y marca para el email
+    const enrichedItems = items.map((item: { id: string; quantity: number; price_cents: number }) => {
+      const product = products.find(p => p.id === item.id)
+      return {
+        id: item.id,
+        quantity: item.quantity,
+        price_cents: item.price_cents,
+        name: product?.name || '',
+        brand: product?.brand || '',
+      }
+    })
 
     const line_items = items.map((item: { id: string; quantity: number }) => {
       const product = products.find(p => p.id === item.id)
@@ -72,7 +84,7 @@ export async function POST(request: NextRequest) {
         },
       ],
       metadata: {
-        items: JSON.stringify(items),
+        items: JSON.stringify(enrichedItems),
       },
     })
 
