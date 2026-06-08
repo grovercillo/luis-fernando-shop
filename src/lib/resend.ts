@@ -98,10 +98,13 @@ export async function sendOrderConfirmation({
     </html>
   `
 
-  return resend.emails.send({
+  const result = await resend.emails.send({
     from: 'Luis Fernando <onboarding@resend.dev>',
     to,
     subject: `Pedido confirmado #${orderNumber} · Luis Fernando`,
     html,
   })
+
+  console.log('Resend result:', JSON.stringify(result))
+  return result
 }
