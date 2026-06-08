@@ -1,8 +1,16 @@
 'use client'
+
 import { useRouter } from 'next/navigation'
+import { useEffect } from 'react'
+import { useCartStore } from '@/lib/cart-store'
 
 export default function PedidoConfirmadoPage() {
   const router = useRouter()
+  const clearCart = useCartStore(state => state.clearCart)
+
+  useEffect(() => {
+    clearCart()
+  }, [clearCart])
 
   return (
     <main style={{ minHeight: '100vh', background: '#FAF6EE' }}>
@@ -13,7 +21,6 @@ export default function PedidoConfirmadoPage() {
         textAlign: 'center',
       }}>
 
-        {/* Icono */}
         <div style={{
           width: '64px',
           height: '64px',
